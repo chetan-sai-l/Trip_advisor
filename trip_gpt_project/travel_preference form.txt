@@ -1,0 +1,35 @@
+def travel_preference_view(request):
+    if request.method == 'POST':
+        form = TravelPreferenceForm(request.POST)
+        if form.is_valid():
+            group_type = form.cleaned_data['group_type']
+            transportation = form.cleaned_data['transportation']
+            accommodation = form.cleaned_data['accommodation']
+            outdoor_adventures=form.cleaned_data['outdoor_adventures']
+            cultural_experiences=form.cleaned_data['cultural_experiences']
+            specific_cuisine=form.cleaned_data['specific_cuisine']
+            
+            # Save the answers to the database or perform any other action
+            a = f" suggest me a place based on details given I am travelling with {group_type}, like to use {transportation} , prefer the {accommodation} accommodation, like to do {outdoor_adventures} , like to visit {cultural_experiences} and prefer {specific_cuisine} food"
+            obj_exists = TravelPreference.objects.filter(question = a).exists()
+            if obj_exists :
+                print("obj exists")
+                return render(request,'travel_suggestion_1.html',{'response':obj.plan})
+            response = get_completion(a)
+            print(a)
+            travel_preference = TravelPreference(
+                group_type=group_type,
+                transportation=transportation,
+                accommodation=accommodation,
+                outdoor_adventures = outdoor_adventures,
+                cultural_experiences = cultural_experiences,
+                specific_cuisine = specific_cuisine,
+                plan = response,
+                question = a,
+            )
+            travel_preference.save()
+            return render(request,'travel_suggestion_1.html',{'response':response})
+            # return render(request,'travel_suggestion.html',{'group_type':group_type, 'transportation':transportation, 'accommodation':accommodation, 'outdoor_adventures':outdoor_adventures,'cultural_experiences':cultural_experiences,'specific_cuisine':specific_cuisine})
+    else:
+        form = TravelPreferenceForm()
+    return render(request, 'travel_preference.html', {'form': form})
